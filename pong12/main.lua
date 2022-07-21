@@ -94,7 +94,7 @@ function love.load()
 
     -- initialize player paddles and ball
     player1 = Paddle(10, 30, 5, 20)
-    player2 = Paddle(VIRTUAL_WIDTH - 10, VIRTUAL_HEIGHT - 30, 5, 20)
+    player2 = Paddle(VIRTUAL_WIDTH - 15, VIRTUAL_HEIGHT - 30, 5, 20)
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
     gameState = 'start'
@@ -209,11 +209,19 @@ function love.update(dt)
         player1.dy = 0
     end
 
-    -- player 2 movement
-    if love.keyboard.isDown('up') then
-        player2.dy = -PADDLE_SPEED
-    elseif love.keyboard.isDown('down') then
-        player2.dy = PADDLE_SPEED
+    -- player 2 AI movement
+    -- when the ball reach the half of our virtual width
+    -- and the dx of the ball is positive, player 2 will start to move
+    if ball.x > VIRTUAL_WIDTH / 2 - 2 and ball.dx > 0 then
+        -- paddle 2 will move to the ball position if the half of the ball
+        -- is higher or lower of the half of the paddle
+        if ball.y-2 < (player2.y+(player2.height/2)) then
+            player2.dy = -PADDLE_SPEED
+        elseif ball.y-2 > -(player2.y+(player2.height/2)) then
+            player2.dy = PADDLE_SPEED
+        else
+            player2.dy = 0
+        end
     else
         player2.dy = 0
     end
@@ -222,10 +230,11 @@ function love.update(dt)
     -- scale the velocity by dt so movement is framerate-independent
     if gameState == 'play' then
         ball:update(dt)
+        -- player 2 AI movement will start when the state is play
+        player2:update(dt)
     end
 
     player1:update(dt)
-    player2:update(dt)
 end
 
 --[[
